@@ -260,6 +260,7 @@ var tests = []*components.IntegrationTest{
 	file.RenameSimilarityThresholdChange,
 	file.RenamedFiles,
 	file.RenamedFilesNoRootItem,
+	file.ShowAllFiles,
 	file.StageAllWithoutChangedFiles,
 	file.StageChildrenRangeSelect,
 	file.StageDeletedRangeSelect,

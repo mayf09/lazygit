@@ -78,6 +78,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` g `` | Bekijk upstream reset opties |  |
 | `` D `` | Resetten | View reset options for working tree (e.g. nuking the working tree). |
 | `` ` `` | Toggle bestandsboom weergave | Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list, tree layout groups files by directory.<br><br>The default can be changed in the config file with the key 'gui.showFileTree'. |
+| `` ~ `` | Toggle show all files | Toggle between showing only files with changes (the default) and showing every file in the repo. In 'show all files' mode, files are shown as a directory tree with directories collapsed; expand a directory to navigate into it. |
 | `` <ctrl+t> `` | Open externe diff applicatie (git difftool) |  |
 | `` M `` | Bekijk merge conflict opties | Bekijk opties voor het oplossen van mergeconflicten. |
 | `` f `` | Fetch | Fetch changes from remote. |

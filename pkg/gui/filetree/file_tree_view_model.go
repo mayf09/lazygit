@@ -27,8 +27,8 @@ type FileTreeViewModel struct {
 
 var _ IFileTreeViewModel = &FileTreeViewModel{}
 
-func NewFileTreeViewModel(getFiles func() []*models.File, common *common.Common, showTree bool) *FileTreeViewModel {
-	fileTree := NewFileTree(getFiles, common, showTree)
+func NewFileTreeViewModel(getFiles func() []*models.File, getAllFiles func() []*models.File, common *common.Common, showTree bool) *FileTreeViewModel {
+	fileTree := NewFileTree(getFiles, getAllFiles, common, showTree)
 	listCursor := traits.NewListCursor(fileTree.Len)
 	return &FileTreeViewModel{
 		IFileTree:     fileTree,

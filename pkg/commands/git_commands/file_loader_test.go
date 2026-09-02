@@ -307,6 +307,60 @@ func TestFileGetStatusFiles(t *testing.T) {
 	}
 }
 
+func TestFileGetAllFiles(t *testing.T) {
+	type scenario struct {
+		testName      string
+		statusFiles   []*models.File
+		lsFilesOutput string
+		expectedFiles []*models.File
+	}
+
+	scenarios := []scenario{
+		{
+			testName: "merges tracked files from ls-files with status files",
+			statusFiles: []*models.File{
+				{Path: "changed.txt", ShortStatus: " M", Tracked: true, HasUnstagedChanges: true},
+				{Path: "untracked.txt", ShortStatus: "??", Added: true},
+			},
+			lsFilesOutput: "changed.txt\x00clean.txt\x00sub/clean2.txt\x00",
+			expectedFiles: []*models.File{
+				{Path: "changed.txt", ShortStatus: " M", Tracked: true, HasUnstagedChanges: true},
+				{Path: "untracked.txt", ShortStatus: "??", Added: true},
+				{Path: "clean.txt", ShortStatus: "  ", Tracked: true},
+				{Path: "sub/clean2.txt", ShortStatus: "  ", Tracked: true},
+			},
+		},
+		{
+			testName: "no tracked files",
+			statusFiles: []*models.File{
+				{Path: "untracked.txt", ShortStatus: "??", Added: true},
+			},
+			lsFilesOutput: "",
+			expectedFiles: []*models.File{
+				{Path: "untracked.txt", ShortStatus: "??", Added: true},
+			},
+		},
+	}
+
+	for _, s := range scenarios {
+		t.Run(s.testName, func(t *testing.T) {
+			runner := oscommands.NewFakeRunner(t).
+				ExpectGitArgs([]string{"ls-files", "-z"}, s.lsFilesOutput, nil)
+			cmd := oscommands.NewDummyCmdObjBuilder(runner)
+
+			userConfig := &config.UserConfig{}
+			loader := &FileLoader{
+				GitCommon:   buildGitCommon(commonDeps{appState: &config.AppState{}, userConfig: userConfig}),
+				cmd:         cmd,
+				config:      &FakeFileLoaderConfig{showUntrackedFiles: "yes"},
+				getFileType: func(string) string { return "file" },
+			}
+
+			assert.EqualValues(t, s.expectedFiles, loader.GetAllFiles(s.statusFiles))
+		})
+	}
+}
+
 type FakeFileLoaderConfig struct {
 	showUntrackedFiles string
 }

@@ -361,6 +361,7 @@ func (self *MenuItem) ID() string {
 type Model struct {
 	CommitFiles     []*models.CommitFile
 	Files           []*models.File
+	AllFiles        []*models.File
 	Submodules      []*models.SubmoduleConfig
 	Branches        []*models.Branch
 	Commits         []*models.Commit

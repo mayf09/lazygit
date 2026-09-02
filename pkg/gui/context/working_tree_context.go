@@ -27,6 +27,7 @@ func (self *WorkingTreeContext) GetDiffMainViewType() types.DiffMainViewType {
 func NewWorkingTreeContext(c *ContextCommon) *WorkingTreeContext {
 	viewModel := filetree.NewFileTreeViewModel(
 		func() []*models.File { return c.Model().Files },
+		func() []*models.File { return c.Model().AllFiles },
 		c.Common,
 		c.UserConfig().Gui.ShowFileTree,
 	)

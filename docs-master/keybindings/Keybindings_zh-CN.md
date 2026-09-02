@@ -211,6 +211,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` g `` | 查看上游重置选项 |  |
 | `` D `` | 重置 | 查看工作树的重置选项（例如：清除工作树）。 |
 | `` ` `` | 切换文件树视图 | 在平面布局和树布局之间切换文件视图。平面布局在单个列表中显示所有文件路径，树布局按目录分组文件。<br><br>可以在配置文件中使用 'gui.showFileTree' 键更改默认设置。 |
+| `` ~ `` | Toggle show all files | Toggle between showing only files with changes (the default) and showing every file in the repo. In 'show all files' mode, files are shown as a directory tree with directories collapsed; expand a directory to navigate into it. |
 | `` <ctrl+t> `` | 使用外部差异比较工具(git difftool) |  |
 | `` M `` | 查看合并冲突选项 | 查看用于解决合并冲突的选项。 |
 | `` f `` | 抓取 | 从远程获取变更 |

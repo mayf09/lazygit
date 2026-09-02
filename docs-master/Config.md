@@ -789,6 +789,7 @@ keybinding:
     stashAllChanges: s
     viewStashOptions: S
     toggleStagedAll: a
+    toggleShowAllFiles: "~"
     viewResetOptions: D
     fetch: f
     toggleTreeView: '`'

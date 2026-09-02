@@ -18,6 +18,7 @@ func TestSetStatusFilterPreservingSelection(t *testing.T) {
 	}
 	viewModel := NewFileTreeViewModel(
 		func() []*models.File { return files },
+		nil,
 		common.NewDummyCommon(),
 		false,
 	)
@@ -61,7 +62,7 @@ func TestSetTreeSelectsNewFileWhenSelectedRenameSplits(t *testing.T) {
 				{Path: "dir/new.go", PreviousPath: "dir/old.go"},
 				{Path: "other.go"},
 			}
-			viewModel := NewFileTreeViewModel(func() []*models.File { return files }, cmn, true)
+			viewModel := NewFileTreeViewModel(func() []*models.File { return files }, nil, cmn, true)
 			viewModel.SetTree()
 			idx, found := viewModel.GetIndexForPath(InternalTreePathForFilePath("dir/new.go", s.showRootItem))
 			assert.True(t, found)
@@ -109,7 +110,7 @@ func TestSetTreeFollowsRenameIntoCollapsedDir(t *testing.T) {
 				{Path: "a/new.go"},
 				{Path: "old.go"},
 			}
-			viewModel := NewFileTreeViewModel(func() []*models.File { return files }, cmn, true)
+			viewModel := NewFileTreeViewModel(func() []*models.File { return files }, nil, cmn, true)
 			viewModel.SetTree()
 			viewModel.ToggleCollapsed(InternalTreePathForFilePath("a", s.showRootItem))
 			idx, found := viewModel.GetIndexForPath(InternalTreePathForFilePath("old.go", s.showRootItem))
@@ -187,6 +188,7 @@ func TestSetTreeKeepsSelectionAcrossCompressionChanges(t *testing.T) {
 			cmn := common.NewDummyCommon()
 			viewModel := NewFileTreeViewModel(
 				func() []*models.File { return files },
+				nil,
 				cmn,
 				true,
 			)

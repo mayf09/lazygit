@@ -24,6 +24,11 @@ type FilesController struct {
 
 	// what this panel offers on the diff it shows in the focused main view
 	diffActions *WorkingTreeDiffActions
+
+	// Whether the files view was in tree mode before entering "show all files"
+	// mode, so that leaving the mode can restore it.
+	prevShowTree      bool
+	prevShowTreeValid bool
 }
 
 var _ types.IController = &FilesController{}
@@ -175,6 +180,12 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 			Handler:     self.toggleTreeView,
 			Description: self.c.Tr.ToggleTreeView,
 			Tooltip:     self.c.Tr.ToggleTreeViewTooltip,
+		},
+		{
+			Keys:        opts.GetKeys(opts.Config.Files.ToggleShowAllFiles),
+			Handler:     self.toggleShowAllFiles,
+			Description: self.c.Tr.ToggleShowAllFiles,
+			Tooltip:     self.c.Tr.ToggleShowAllFilesTooltip,
 		},
 		{
 			Keys:              opts.GetKeys(opts.Config.Universal.OpenDiffTool),
@@ -1191,6 +1202,8 @@ func (self *FilesController) filteringLabel(filter filetree.FileTreeDisplayFilte
 		return self.c.Tr.FilterLabelUntrackedFiles
 	case filetree.DisplayConflicted:
 		return self.c.Tr.FilterLabelConflictingFiles
+	case filetree.DisplayAllFiles:
+		return self.c.Tr.FilterLabelAllFiles
 	}
 
 	panic(fmt.Sprintf("Unexpected files display filter: %d", filter))
@@ -1502,6 +1515,45 @@ func (self *FilesController) toggleTreeView() error {
 	self.context().FileTreeViewModel.ToggleShowTree()
 
 	self.c.PostRefreshUpdate(self.context())
+	return nil
+}
+
+func (self *FilesController) toggleShowAllFiles() error {
+	vm := self.context().FileTreeViewModel
+
+	if vm.GetStatusFilter() == filetree.DisplayAllFiles {
+		// Leaving "show all files" mode.
+		vm.SetStatusFilter(filetree.DisplayAll)
+		self.context().GetView().Subtitle = ""
+		self.c.Model().AllFiles = nil
+		if self.prevShowTreeValid && !self.prevShowTree {
+			vm.ToggleShowTree()
+		}
+		self.prevShowTreeValid = false
+	} else {
+		// Entering "show all files" mode: show every file as a directory tree.
+		self.prevShowTree = vm.InTreeMode()
+		self.prevShowTreeValid = true
+		vm.SetStatusFilter(filetree.DisplayAllFiles)
+		self.context().GetView().Subtitle = self.c.Tr.FilterLabelAllFiles
+		if !vm.InTreeMode() {
+			vm.ToggleShowTree()
+		}
+	}
+
+	self.c.Refresh(types.RefreshOptions{
+		Scope: []types.RefreshableView{types.FILES},
+		Then: func() error {
+			if self.context().FileTreeViewModel.GetStatusFilter() == filetree.DisplayAllFiles {
+				// Collapse directories so the user expands into them, but keep
+				// the top level visible.
+				self.context().FileTreeViewModel.CollapseAll()
+				self.context().FileTreeViewModel.ExpandToPath(".")
+				self.c.PostRefreshUpdate(self.context())
+			}
+			return nil
+		},
+	})
 	return nil
 }
 

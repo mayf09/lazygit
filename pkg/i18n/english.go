@@ -54,6 +54,8 @@ type TranslationSet struct {
 	StageTooltip                          string
 	ToggleStagedAll                       string
 	ToggleStagedAllTooltip                string
+	ToggleShowAllFiles                    string
+	ToggleShowAllFilesTooltip             string
 	ToggleTreeView                        string
 	ToggleTreeViewTooltip                 string
 	OpenDiffTool                          string
@@ -89,6 +91,7 @@ type TranslationSet struct {
 	FilterLabelTrackedFiles               string
 	FilterLabelUntrackedFiles             string
 	FilterLabelConflictingFiles           string
+	FilterLabelAllFiles                   string
 	MergeConflictsTitle                   string
 	MergeConflictDescription_DD           string
 	MergeConflictDescription_AU           string
@@ -1238,6 +1241,8 @@ func EnglishTranslationSet() *TranslationSet {
 		StageTooltip:                         "Toggle staged for selected file.",
 		ToggleStagedAll:                      "Stage all",
 		ToggleStagedAllTooltip:               "Toggle staged/unstaged for all files in working tree.",
+		ToggleShowAllFiles:                   "Toggle show all files",
+		ToggleShowAllFilesTooltip:            "Toggle between showing only files with changes (the default) and showing every file in the repo. In 'show all files' mode, files are shown as a directory tree with directories collapsed; expand a directory to navigate into it.",
 		ToggleTreeView:                       "Toggle file tree view",
 		ToggleTreeViewTooltip:                "Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list, tree layout groups files by directory.\n\nThe default can be changed in the config file with the key 'gui.showFileTree'.",
 		OpenDiffTool:                         "Open external diff tool (git difftool)",
@@ -1294,6 +1299,7 @@ func EnglishTranslationSet() *TranslationSet {
 		FilterLabelTrackedFiles:              "(only tracked)",
 		FilterLabelUntrackedFiles:            "(only untracked)",
 		FilterLabelConflictingFiles:          "(only conflicting)",
+		FilterLabelAllFiles:                  "(all files)",
 		NoChangedFiles:                       "No changed files",
 		SoftReset:                            "Soft reset",
 		AlreadyCheckedOutBranch:              "You have already checked out this branch",

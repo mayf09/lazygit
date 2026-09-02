@@ -598,6 +598,7 @@ type KeybindingFilesConfig struct {
 	StashAllChanges          Keybinding `yaml:"stashAllChanges"`
 	ViewStashOptions         Keybinding `yaml:"viewStashOptions"`
 	ToggleStagedAll          Keybinding `yaml:"toggleStagedAll"`
+	ToggleShowAllFiles       Keybinding `yaml:"toggleShowAllFiles"`
 	ViewResetOptions         Keybinding `yaml:"viewResetOptions"`
 	Fetch                    Keybinding `yaml:"fetch"`
 	ToggleTreeView           Keybinding `yaml:"toggleTreeView"`
@@ -1117,6 +1118,7 @@ func GetDefaultConfigForPlatform(platform string) *UserConfig {
 				StashAllChanges:          Keybinding{"s"},
 				ViewStashOptions:         Keybinding{"S"},
 				ToggleStagedAll:          Keybinding{"a"},
+				ToggleShowAllFiles:       Keybinding{"~"},
 				ViewResetOptions:         Keybinding{"D"},
 				Fetch:                    Keybinding{"f"},
 				ToggleTreeView:           Keybinding{"`"},

@@ -323,6 +323,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` g `` | 檢視遠端重設選項 |  |
 | `` D `` | 重設 | 檢視工作樹的重置選項（例如：清除工作樹）。 |
 | `` ` `` | 顯示檔案樹狀視圖 | 在平面佈局和樹佈局之間切換檔案檢視。平面佈局在單個列表中顯示所有檔案路徑，樹佈局按目錄分組檔案。<br><br>可以在設定檔中使用 'gui.showFileTree' 鍵更改預設設定。 |
+| `` ~ `` | Toggle show all files | Toggle between showing only files with changes (the default) and showing every file in the repo. In 'show all files' mode, files are shown as a directory tree with directories collapsed; expand a directory to navigate into it. |
 | `` <ctrl+t> `` | 開啟外部差異工具 (git difftool) |  |
 | `` M `` | 檢視合併衝突選項 | 檢視用於解決合併衝突的選項。 |
 | `` f `` | 擷取 | 同步遠端異動 |

@@ -93,6 +93,44 @@ func (self *FileLoader) GetStatusFiles(opts GetStatusFileOptions) []*models.File
 	return files
 }
 
+// GetAllFiles returns every file in the repo: the files git status reports
+// (changed, untracked, and deleted files), plus the tracked files that git
+// status leaves out because they are unchanged.
+func (self *FileLoader) GetAllFiles(statusFiles []*models.File) []*models.File {
+	trackedPaths, err := self.getAllTrackedFiles()
+	if err != nil {
+		self.Log.Error(err)
+	}
+
+	statusByPath := make(map[string]*models.File, len(statusFiles))
+	for _, file := range statusFiles {
+		statusByPath[file.Path] = file
+	}
+
+	allFiles := append([]*models.File{}, statusFiles...)
+	for _, path := range trackedPaths {
+		if _, ok := statusByPath[path]; !ok {
+			file := &models.File{Path: path}
+			models.SetStatusFields(file, "  ")
+			allFiles = append(allFiles, file)
+		}
+	}
+
+	return allFiles
+}
+
+func (self *FileLoader) getAllTrackedFiles() ([]string, error) {
+	cmdArgs := NewGitCmd("ls-files").Arg("-z").ToArgv()
+	output, err := self.cmd.New(cmdArgs).DontLog().RunWithOutput()
+	if err != nil {
+		return nil, err
+	}
+	if output == "" {
+		return []string{}, nil
+	}
+	return strings.Split(strings.TrimRight(output, "\x00"), "\x00"), nil
+}
+
 // Looks up how long the conflict markers in the conflicted files are. We ask
 // git for all of them at once, because spawning a process per file would be
 // painfully slow when hundreds of files are conflicted (especially on Windows).

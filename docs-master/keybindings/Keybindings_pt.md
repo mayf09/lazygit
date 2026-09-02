@@ -78,6 +78,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` g `` | View upstream reset options |  |
 | `` D `` | Restaurar | Opções de redefinição de exibição para árvore de trabalho (por exemplo, nukando a árvore de trabalho). |
 | `` ` `` | Alternar exibição de árvore de arquivo | Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list, tree layout groups files by directory.<br><br>The default can be changed in the config file with the key 'gui.showFileTree'. |
+| `` ~ `` | Toggle show all files | Toggle between showing only files with changes (the default) and showing every file in the repo. In 'show all files' mode, files are shown as a directory tree with directories collapsed; expand a directory to navigate into it. |
 | `` <ctrl+t> `` | Abrir ferramenta de diff externa (git difftool) |  |
 | `` M `` | View merge conflict options | View options for resolving merge conflicts. |
 | `` f `` | Buscar | Buscar alterações do controle remoto. |

@@ -1317,6 +1317,7 @@ func (self *RefreshHelper) captureOnUIThread(calledFromWorker bool, background b
 type capturedFilesState struct {
 	prevFiles          []*models.File
 	forceShowUntracked bool
+	showAllFiles       bool
 }
 
 // captureFilesState reads the files refresh's inputs into an immutable snapshot.
@@ -1325,6 +1326,7 @@ func (self *RefreshHelper) captureFilesState() capturedFilesState {
 	return capturedFilesState{
 		prevFiles:          self.c.Model().Files,
 		forceShowUntracked: self.c.Contexts().Files.ForceShowUntracked(),
+		showAllFiles:       self.c.Contexts().Files.GetStatusFilter() == filetree.DisplayAllFiles,
 	}
 }
 
@@ -1377,6 +1379,11 @@ func (self *RefreshHelper) refreshStateFiles(captured capturedFilesState, env re
 	conflictedPaths := lo.FilterMap(files, func(file *models.File, _ int) (string, bool) {
 		return file.Path, file.HasMergeConflicts
 	})
+
+	var allFiles []*models.File
+	if captured.showAllFiles {
+		allFiles = env.git.Loaders.FileLoader.GetAllFiles(files)
+	}
 
 	repoState := self.c.State().GetRepoState()
 	workingTreeState := env.git.Status.WorkingTreeState()
@@ -1441,6 +1448,9 @@ func (self *RefreshHelper) refreshStateFiles(captured capturedFilesState, env re
 		self.c.Model().Submodules = submoduleConfigs
 		self.c.Model().Files = files
 		markWorktreeFiles(files, self.c.Model().Worktrees, env.git.RepoPaths.WorktreePath())
+		if captured.showAllFiles {
+			self.c.Model().AllFiles = allFiles
+		}
 		fileTreeViewModel.SetTree()
 	})
 

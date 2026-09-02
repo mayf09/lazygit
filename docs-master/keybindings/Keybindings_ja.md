@@ -254,6 +254,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` g `` | アップストリームへのリセットオプションを表示 |  |
 | `` D `` | リセット | 作業ツリーのリセットオプション（例：作業ツリーの完全破棄）を表示します。 |
 | `` ` `` | ファイルツリービューを切り替え | ファイル表示をフラット表示とツリー表示で切り替えます。フラット表示はすべてのファイルパスを一覧で表示し、ツリー表示はディレクトリごとにファイルをグループ化します。<br><br>デフォルトは設定ファイル内の 'gui.showFileTree' キーで変更できます。 |
+| `` ~ `` | Toggle show all files | Toggle between showing only files with changes (the default) and showing every file in the repo. In 'show all files' mode, files are shown as a directory tree with directories collapsed; expand a directory to navigate into it. |
 | `` <ctrl+t> `` | 外部差分ツールを開く（git difftool） |  |
 | `` M `` | View merge conflict options | View options for resolving merge conflicts. |
 | `` f `` | フェッチ | リモートから変更をフェッチします。 |

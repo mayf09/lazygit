@@ -20,6 +20,8 @@ const (
 	DisplayUntracked
 	// this shows files with merge conflicts
 	DisplayConflicted
+	// this shows every file in the repo, including unchanged tracked files
+	DisplayAllFiles
 )
 
 type ITree[T any] interface {
@@ -56,11 +58,12 @@ type IFileTree interface {
 }
 
 type FileTree struct {
-	getFiles func() []*models.File
-	tree     *Node[models.File]
-	showTree bool
-	common   *common.Common
-	filter   FileTreeDisplayFilter
+	getFiles    func() []*models.File
+	getAllFiles func() []*models.File
+	tree        *Node[models.File]
+	showTree    bool
+	common      *common.Common
+	filter      FileTreeDisplayFilter
 	// Paths of the files that had conflicts while the current filter has been
 	// active. The DisplayConflicted filter keeps showing them after their
 	// conflicts have been resolved, so that their diffs can be reviewed while
@@ -73,9 +76,10 @@ type FileTree struct {
 
 var _ IFileTree = &FileTree{}
 
-func NewFileTree(getFiles func() []*models.File, common *common.Common, showTree bool) *FileTree {
+func NewFileTree(getFiles func() []*models.File, getAllFiles func() []*models.File, common *common.Common, showTree bool) *FileTree {
 	return &FileTree{
 		getFiles:        getFiles,
+		getAllFiles:     getAllFiles,
 		common:          common,
 		showTree:        showTree,
 		filter:          DisplayAll,
@@ -111,6 +115,8 @@ func (self *FileTree) getFilesForDisplay() []*models.File {
 		files = self.FilterFiles(func(file *models.File) bool {
 			return file.HasMergeConflicts || self.conflictedPaths.Includes(file.Path)
 		})
+	case DisplayAllFiles:
+		files = self.getAllFiles()
 	default:
 		panic(fmt.Sprintf("Unexpected files display filter: %d", self.filter))
 	}
@@ -123,7 +129,7 @@ func (self *FileTree) getFilesForDisplay() []*models.File {
 }
 
 func (self *FileTree) ForceShowUntracked() bool {
-	return self.filter == DisplayUntracked
+	return self.filter == DisplayUntracked || self.filter == DisplayAllFiles
 }
 
 func (self *FileTree) FilterFiles(test func(*models.File) bool) []*models.File {
