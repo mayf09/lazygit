@@ -342,6 +342,7 @@ type PullFilesOptions struct {
 	UpstreamRemote  string
 	UpstreamBranch  string
 	FastForwardOnly bool
+	Rebase          bool
 	Action          string
 
 	// Branches stacked below the current one, updated to their upstream
@@ -385,10 +386,32 @@ func (self *SyncController) pullWithLock(task gocui.Task, opts PullFilesOptions)
 			RemoteName:      opts.UpstreamRemote,
 			BranchName:      opts.UpstreamBranch,
 			FastForwardOnly: opts.FastForwardOnly,
+			Rebase:          opts.Rebase,
 		},
 	)
 
+	if err != nil && !opts.Rebase {
+		return self.c.Helpers().MergeAndRebase.CheckMergeOrRebaseAndSelectHeadCommit(err, func() error {
+			return self.rebaseInstead(opts)
+		})
+	}
+
 	return self.c.Helpers().MergeAndRebase.CheckMergeOrRebaseAndSelectHeadCommit(err)
+}
+
+func (self *SyncController) rebaseInstead(opts PullFilesOptions) error {
+	currentBranch := self.c.Helpers().Refs.GetCheckedOutRef()
+	if currentBranch == nil {
+		return nil
+	}
+
+	opts.Rebase = true
+	return self.c.Helpers().BranchesHelper.WithInlineStatusOnBranches([]*models.Branch{currentBranch}, types.ItemOperationPulling, func(task gocui.Task) error {
+		if err := self.c.Helpers().MergeAndRebase.AbortMergeOrRebaseFromWorker(); err != nil {
+			return err
+		}
+		return self.pullWithLock(task, opts)
+	})
 }
 
 type pushOpts struct {

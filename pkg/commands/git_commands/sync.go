@@ -95,6 +95,7 @@ type PullOptions struct {
 	RemoteName      string
 	BranchName      string
 	FastForwardOnly bool
+	Rebase          bool
 	WorktreeGitDir  string
 	WorktreePath    string
 }
@@ -103,6 +104,7 @@ func (self *SyncCommands) Pull(task gocui.Task, opts PullOptions) error {
 	cmdArgs := NewGitCmd("pull").
 		Arg("--no-edit").
 		ArgIf(opts.FastForwardOnly, "--ff-only").
+		ArgIf(opts.Rebase, "--rebase").
 		ArgIf(opts.RemoteName != "", opts.RemoteName).
 		ArgIf(opts.BranchName != "", "refs/heads/"+opts.BranchName).
 		GitDirIf(opts.WorktreeGitDir != "", opts.WorktreeGitDir).

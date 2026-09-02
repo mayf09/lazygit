@@ -598,6 +598,7 @@ var tests = []*components.IntegrationTest{
 	sync.PullAndSetUpstream,
 	sync.PullMerge,
 	sync.PullMergeConflict,
+	sync.PullMergeConflictThenRebase,
 	sync.PullRebase,
 	sync.PullRebaseConflict,
 	sync.PullRebaseInteractiveConflict,

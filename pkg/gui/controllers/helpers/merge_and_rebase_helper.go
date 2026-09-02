@@ -227,7 +227,7 @@ func (self *MergeAndRebaseHelper) RecordWhetherMergeOrRebaseStartedInLazygit() {
 // CheckMergeOrRebaseWithRefreshOptions handles the result of a merge/rebase
 // step and refreshes. It always runs on a worker (the WithWaitingStatus /
 // WithWaitingStatusBlockingInput / WithInlineStatus handlers).
-func (self *MergeAndRebaseHelper) CheckMergeOrRebaseWithRefreshOptions(result error, refreshOptions types.RefreshOptions) error {
+func (self *MergeAndRebaseHelper) CheckMergeOrRebaseWithRefreshOptions(result error, refreshOptions types.RefreshOptions, rebaseHandlers ...func() error) error {
 	self.refreshAfterMergeOrRebase(refreshOptions, true)
 
 	self.RecordWhetherMergeOrRebaseStartedInLazygit()
@@ -242,7 +242,7 @@ func (self *MergeAndRebaseHelper) CheckMergeOrRebaseWithRefreshOptions(result er
 		// assume in this case that we're already done
 		return nil
 	}
-	return self.CheckForConflicts(result)
+	return self.CheckForConflicts(result, rebaseHandlers...)
 }
 
 // refreshAfterMergeOrRebase issues the post-action refresh on the entry point
@@ -265,43 +265,60 @@ func (self *MergeAndRebaseHelper) CheckMergeOrRebase(result error) error {
 // (a merge, or a pull that merges): on success it selects that new commit,
 // which the keep-selection-by-hash logic can't do since the commit didn't exist
 // before the refresh.
-func (self *MergeAndRebaseHelper) CheckMergeOrRebaseAndSelectHeadCommit(result error) error {
+func (self *MergeAndRebaseHelper) CheckMergeOrRebaseAndSelectHeadCommit(result error, rebaseHandlers ...func() error) error {
 	return self.CheckMergeOrRebaseWithRefreshOptions(result,
-		types.RefreshOptions{CommitSelection: commitSelectionAfterMerge(result == nil)})
+		types.RefreshOptions{CommitSelection: commitSelectionAfterMerge(result == nil)},
+		rebaseHandlers...)
 }
 
-func (self *MergeAndRebaseHelper) CheckForConflicts(result error) error {
+func (self *MergeAndRebaseHelper) CheckForConflicts(result error, rebaseHandlers ...func() error) error {
 	if result == nil {
 		return nil
 	}
 
 	if isMergeConflictErr(result.Error()) {
-		return self.PromptForConflictHandling()
+		var rebaseHandler func() error
+		if len(rebaseHandlers) > 0 {
+			rebaseHandler = rebaseHandlers[0]
+		}
+		return self.PromptForConflictHandling(rebaseHandler)
 	}
 
 	return result
 }
 
-func (self *MergeAndRebaseHelper) PromptForConflictHandling() error {
+func (self *MergeAndRebaseHelper) PromptForConflictHandling(rebaseHandler func() error) error {
 	mode := self.c.Git().Status.WorkingTreeState().CommandName()
-	return self.c.Menu(types.CreateMenuOptions{
-		Title: self.c.Tr.FoundConflictsTitle,
-		Items: []*types.MenuItem{
-			{
-				Label: self.c.Tr.ViewConflictsMenuItem,
-				OnPress: func() error {
-					self.c.Context().Push(self.c.Contexts().Files, types.OnFocusOpts{})
-					return nil
-				},
-			},
-			{
-				Label: fmt.Sprintf(self.c.Tr.AbortMenuItem, mode),
-				OnPress: func() error {
-					return self.genericMergeCommand(REBASE_OPTION_ABORT)
-				},
-				Keys: menuKey('a'),
+
+	items := []*types.MenuItem{
+		{
+			Label: self.c.Tr.ViewConflictsMenuItem,
+			OnPress: func() error {
+				self.c.Context().Push(self.c.Contexts().Files, types.OnFocusOpts{})
+				return nil
 			},
 		},
+	}
+
+	if rebaseHandler != nil {
+		items = append(items, &types.MenuItem{
+			Label:   self.c.Tr.RebaseInsteadMenuItem,
+			OnPress: rebaseHandler,
+			Keys:    menuKey('r'),
+		})
+	}
+
+	items = append(items, &types.MenuItem{
+		Label: fmt.Sprintf(self.c.Tr.AbortMenuItem, mode),
+		OnPress: func() error {
+			return self.genericMergeCommand(REBASE_OPTION_ABORT)
+		},
+		Keys: menuKey('a'),
+	})
+
+	return self.c.Menu(types.CreateMenuOptions{
+		Title:      self.c.Tr.FoundConflictsTitle,
+		Items:      items,
 		HideCancel: true,
 	})
 }
@@ -318,6 +335,10 @@ func (self *MergeAndRebaseHelper) AbortMergeOrRebaseWithConfirm() error {
 	})
 
 	return nil
+}
+
+func (self *MergeAndRebaseHelper) AbortMergeOrRebaseFromWorker() error {
+	return self.genericMergeCommandImpl(REBASE_OPTION_ABORT, false, true)
 }
 
 // PromptToContinueRebase asks the user if they want to continue the rebase/merge that's in progress

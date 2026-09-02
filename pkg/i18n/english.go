@@ -336,6 +336,7 @@ type TranslationSet struct {
 	FoundConflictsTitle                   string
 	ViewConflictsMenuItem                 string
 	AbortMenuItem                         string
+	RebaseInsteadMenuItem                 string
 	PickHunk                              string
 	PickBothHunks                         string
 	ViewMergeRebaseOptions                string
@@ -1527,6 +1528,7 @@ func EnglishTranslationSet() *TranslationSet {
 		FoundConflictsTitle:                  "Conflicts!",
 		ViewConflictsMenuItem:                "View conflicts",
 		AbortMenuItem:                        "Abort the %s",
+		RebaseInsteadMenuItem:                "Rebase instead",
 		ViewMergeRebaseOptions:               "View merge/rebase options",
 		ViewMergeRebaseOptionsTooltip:        "View options to abort/continue/skip the current merge/rebase.",
 		ViewMergeOptions:                     "View merge options",
