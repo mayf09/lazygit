@@ -309,10 +309,11 @@ func TestFileGetStatusFiles(t *testing.T) {
 
 func TestFileGetAllFiles(t *testing.T) {
 	type scenario struct {
-		testName      string
-		statusFiles   []*models.File
-		lsFilesOutput string
-		expectedFiles []*models.File
+		testName              string
+		statusFiles           []*models.File
+		lsFilesOutput         string
+		ignoredTmpFilesOutput string
+		expectedFiles         []*models.File
 	}
 
 	scenarios := []scenario{
@@ -322,12 +323,14 @@ func TestFileGetAllFiles(t *testing.T) {
 				{Path: "changed.txt", ShortStatus: " M", Tracked: true, HasUnstagedChanges: true},
 				{Path: "untracked.txt", ShortStatus: "??", Added: true},
 			},
-			lsFilesOutput: "changed.txt\x00clean.txt\x00sub/clean2.txt\x00",
+			lsFilesOutput:         "changed.txt\x00clean.txt\x00sub/clean2.txt\x00",
+			ignoredTmpFilesOutput: "tmp/scratch.txt\x00",
 			expectedFiles: []*models.File{
 				{Path: "changed.txt", ShortStatus: " M", Tracked: true, HasUnstagedChanges: true},
 				{Path: "untracked.txt", ShortStatus: "??", Added: true},
 				{Path: "clean.txt", ShortStatus: "  ", Tracked: true},
 				{Path: "sub/clean2.txt", ShortStatus: "  ", Tracked: true},
+				{Path: "tmp/scratch.txt", ShortStatus: "??", HasUnstagedChanges: true, Added: true},
 			},
 		},
 		{
@@ -335,7 +338,8 @@ func TestFileGetAllFiles(t *testing.T) {
 			statusFiles: []*models.File{
 				{Path: "untracked.txt", ShortStatus: "??", Added: true},
 			},
-			lsFilesOutput: "",
+			lsFilesOutput:         "",
+			ignoredTmpFilesOutput: "",
 			expectedFiles: []*models.File{
 				{Path: "untracked.txt", ShortStatus: "??", Added: true},
 			},
@@ -345,7 +349,12 @@ func TestFileGetAllFiles(t *testing.T) {
 	for _, s := range scenarios {
 		t.Run(s.testName, func(t *testing.T) {
 			runner := oscommands.NewFakeRunner(t).
-				ExpectGitArgs([]string{"ls-files", "-z"}, s.lsFilesOutput, nil)
+				ExpectGitArgs([]string{"ls-files", "-z"}, s.lsFilesOutput, nil).
+				ExpectGitArgs(
+					[]string{"ls-files", "--others", "--ignored", "--exclude-standard", "-z", "--", "tmp"},
+					s.ignoredTmpFilesOutput,
+					nil,
+				)
 			cmd := oscommands.NewDummyCmdObjBuilder(runner)
 
 			userConfig := &config.UserConfig{}

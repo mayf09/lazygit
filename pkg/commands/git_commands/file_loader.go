@@ -95,9 +95,15 @@ func (self *FileLoader) GetStatusFiles(opts GetStatusFileOptions) []*models.File
 
 // GetAllFiles returns every file in the repo: the files git status reports
 // (changed, untracked, and deleted files), plus the tracked files that git
-// status leaves out because they are unchanged.
+// status leaves out because they are unchanged, plus the ignored files under
+// the tmp directory.
 func (self *FileLoader) GetAllFiles(statusFiles []*models.File) []*models.File {
 	trackedPaths, err := self.getAllTrackedFiles()
+	if err != nil {
+		self.Log.Error(err)
+	}
+
+	ignoredTmpPaths, err := self.getIgnoredTmpFiles()
 	if err != nil {
 		self.Log.Error(err)
 	}
@@ -115,12 +121,41 @@ func (self *FileLoader) GetAllFiles(statusFiles []*models.File) []*models.File {
 			allFiles = append(allFiles, file)
 		}
 	}
+	for _, path := range ignoredTmpPaths {
+		if _, ok := statusByPath[path]; !ok {
+			file := &models.File{Path: path}
+			models.SetStatusFields(file, "??")
+			allFiles = append(allFiles, file)
+		}
+	}
 
 	return allFiles
 }
 
 func (self *FileLoader) getAllTrackedFiles() ([]string, error) {
 	cmdArgs := NewGitCmd("ls-files").Arg("-z").ToArgv()
+	output, err := self.cmd.New(cmdArgs).DontLog().RunWithOutput()
+	if err != nil {
+		return nil, err
+	}
+	if output == "" {
+		return []string{}, nil
+	}
+	return strings.Split(strings.TrimRight(output, "\x00"), "\x00"), nil
+}
+
+// getIgnoredTmpFiles returns the ignored files under tmp. Unlike the rest of
+// the all-files view, this directory is shown even though git ignores it, since
+// it usually holds scratch files the user wants to browse.
+func (self *FileLoader) getIgnoredTmpFiles() ([]string, error) {
+	cmdArgs := NewGitCmd("ls-files").
+		Arg("--others").
+		Arg("--ignored").
+		Arg("--exclude-standard").
+		Arg("-z").
+		Arg("--").
+		Arg("tmp").
+		ToArgv()
 	output, err := self.cmd.New(cmdArgs).DontLog().RunWithOutput()
 	if err != nil {
 		return nil, err

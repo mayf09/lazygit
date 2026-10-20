@@ -12,12 +12,14 @@ var ShowAllFiles = NewIntegrationTest(NewIntegrationTestArgs{
 	SetupConfig: func(config *config.AppConfig) {
 	},
 	SetupRepo: func(shell *Shell) {
+		shell.CreateFileAndAdd(".gitignore", "tmp/\n")
 		shell.CreateFileAndAdd("file-a", "a")
 		shell.CreateFileAndAdd("file-b", "b")
 		shell.CreateFileAndAdd("dir/file-c", "c")
 		shell.Commit("initial commit")
 
 		shell.UpdateFile("file-a", "a changed")
+		shell.CreateFile("tmp/file-d", "d")
 	},
 	Run: func(t *TestDriver, keys config.KeybindingConfig) {
 		t.Views().Files().
@@ -30,9 +32,11 @@ var ShowAllFiles = NewIntegrationTest(NewIntegrationTestArgs{
 			Press(keys.Files.ToggleShowAllFiles).
 			Lines(
 				Equals("▼ /").IsSelected(),
+				Equals("     .gitignore"),
 				Equals("  ▶ dir"),
 				Equals("   M file-a"),
 				Equals("     file-b"),
+				Equals("  ▶ tmp"),
 			)
 
 		t.Views().Files().
